@@ -6,12 +6,8 @@ using System.Threading.Tasks;
 
 namespace Neuronal_Network
 {
-    class Program
+    internal abstract class Layer
     {
-        static void Main(string[] args)
-        {
-            NeuronalNetwork.Train();
-            NeuronalNetwork.Test();
-        }
+
     }
 }
