@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Neuronal_Network
 {
@@ -12,6 +8,8 @@ namespace Neuronal_Network
         {
             NeuronalNetwork.Train();
             NeuronalNetwork.Test();
+            Console.WriteLine("Press any key for exit!");
+            Console.ReadKey();
         }
     }
 }

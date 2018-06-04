@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Neuronal_Network
 {
-    internal class InputLayer : Layer
+    internal class InputLayer
     {
         /// <summary>
         /// Initialize all needed variables for the neural network. 28x28 Pixels/Picture = 784

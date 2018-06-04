@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using BIF4_MLE_NeuronalNetwork.utils;
 
 namespace Neuronal_Network
@@ -25,7 +22,7 @@ namespace Neuronal_Network
         public static void Train()
         {
             Console.WriteLine("Reading training data ... ");
-            Console.WriteLine("Starts training the neural network ...");
+            Console.WriteLine("Starts to train the neural network ...");
             var actualerror = 1.0;
             var count = 0;
             while (actualerror > TargetError)
@@ -51,7 +48,7 @@ namespace Neuronal_Network
         public static void Test()
         {
             Console.WriteLine("Reading test data ... ");
-            Console.WriteLine("Starts testing the neural network ...");
+            Console.WriteLine("Starts to test the neural network ...");
             InitializeConfusionMatrix();
             var gesamtElemente = 0;
             var korrekteElemente = 0;
@@ -89,9 +86,12 @@ namespace Neuronal_Network
             InLayer.AdjustWeights();
         }
 
+        /// <summary>
+        /// Berechne die Fehlerdurschnitt vom ganzen Durchlauf der 60 000 gelernten Bildern
+        /// </summary>
+        /// <returns></returns>
         public static double CalculateNetworkErrorAverage()
         {
-            if (NetworkErrorRating.Count == 0) return 1; //Für ersten Durchlauf
             double average = 0.0;
             int count = 0;
             foreach (var error in NetworkErrorRating)
@@ -123,7 +123,7 @@ namespace Neuronal_Network
             ResetDesiredValue();
             for (var i = 0; i < OutLayer.DesiredValuesBlueprint.Length; i++)
             {
-                if (OutLayer.DesiredValuesBlueprint[i].CompareTo(imageLabel) != 0) continue;
+                if (OutLayer.DesiredValuesBlueprint[i].CompareTo(imageLabel) != 0) continue; //Wenn der Wert nicht mit den Wert vom Label übereinstimmt, dann überspringe und setz die schleife fort
                 OutLayer.DesiredValues[i] = 1.0; //Die Stelle welche der Zahl entspricht setze auf 1 -> alle anderen bleiben auf 0
                 break;
             }
@@ -154,7 +154,7 @@ namespace Neuronal_Network
             {
                 for (var j = 0; j < 10; j++)
                 {
-                    ConfusionMatrix[i, j] = 0;
+                    ConfusionMatrix[i, j] = 0; //Alle Werte auf 0 setzen
                 }
             }
         }
@@ -176,9 +176,5 @@ namespace Neuronal_Network
                 Console.WriteLine("----------------------------------------------------------------");
             }
         }
-
-
-
-
     }
 }
