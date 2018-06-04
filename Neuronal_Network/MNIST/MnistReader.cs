@@ -21,8 +21,7 @@ namespace BIF4_MLE_NeuronalNetwork.utils
         public static int NumberOfImages;
 
         public static IEnumerable<Image> ReadTrainingData()
-        {
-            Console.WriteLine("Reading training data ... ");
+        {            
             foreach (var item in Read(TrainImages, TrainLabels))
             {
                 yield return item;
@@ -39,7 +38,6 @@ namespace BIF4_MLE_NeuronalNetwork.utils
 
         private static IEnumerable<Image> Read(string imagesPath, string labelsPath)
         {
-            Console.WriteLine("Reading ... ");
             BinaryReader labels = new BinaryReader(new FileStream(labelsPath, FileMode.Open));
             BinaryReader images = new BinaryReader(new FileStream(imagesPath, FileMode.Open));
 

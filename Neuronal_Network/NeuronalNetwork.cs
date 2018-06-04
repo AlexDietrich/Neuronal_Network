@@ -14,7 +14,9 @@ namespace Neuronal_Network
         private static OutputLayer OutLayer { get; set; } = HidLayer.ChildLayer;
 
         public static HashSet<double> NetworkErrorRating { get; private set; } = new HashSet<double>();
-        public static double TargetError { get; private set; } = 0.05;
+        public static double TargetError { get; private set; } = 0.005;
+
+        public static int[,] ConfusionMatrix { get; set; } = new int[10, 10];
 
         public static double LearningRate { get; private set; } = 0.2;
         public static double MomentumFactor { get; private set; } = 0.9;
@@ -22,28 +24,35 @@ namespace Neuronal_Network
 
         public static void Train()
         {
+            Console.WriteLine("Reading training data ... ");
+            Console.WriteLine("Starts training the neural network ...");
+            var actualerror = 1.0;
             var count = 0;
-            while (CalculateNetworkErrorAverage() > TargetError)
+            while (actualerror > TargetError)
             {
                 NetworkErrorRating.Clear();
                 foreach (var image in MnistReader.ReadTrainingData())
                 {
                     count++;
-                    if (count % 1000 == 0)
-                        Console.WriteLine(
-                            $"Aktueller Durchschnittlicher ErrorWert: {CalculateNetworkErrorAverage()} bei: {count} Durchläufen");
                     SetNeuronValueFromImage(image.Data); //Image data wird in InputLayer eingelesen 
                     SetDesiredValueFromLabel(image
                         .Label); //LabelDaten werden im OutputLayer gespeichert für späteren Vergleich
                     FeedForward();
-                    BackProgagate();
                     NetworkErrorRating.Add(CalculateError());
+                    BackProgagate();
                 }
+                actualerror = CalculateNetworkErrorAverage();
+                Console.WriteLine(
+                    $"Error-Rate: {actualerror} Image-Count: {count}");
             }
+            Console.WriteLine($"Training-Session is finished with Error-Rate: {actualerror}");
         }
 
         public static void Test()
         {
+            Console.WriteLine("Reading test data ... ");
+            Console.WriteLine("Starts testing the neural network ...");
+            InitializeConfusionMatrix();
             var gesamtElemente = 0;
             var korrekteElemente = 0;
             foreach (var image in MnistReader.ReadTestData())
@@ -57,15 +66,32 @@ namespace Neuronal_Network
                     if (OutLayer.DesiredValues[i].CompareTo(1) != 0) continue;
                     if (OutLayer.GetHighestNeuronIndex() == i) korrekteElemente++;
                 }
+                ConfusionMatrix[(int)image.Label, OutLayer.GetHighestNeuronIndex()]++;
             }
-
+            Console.WriteLine("Creating Confusion-Matrix ...");
             double accuracy = ((double)korrekteElemente * (double)100 / (double)gesamtElemente );
+            PrintConfusionMatrix();
             Console.WriteLine($"Accuracy: {accuracy} %");
+        }
+
+        public static void FeedForward()
+        {
+            InLayer.CalculateNeuronValues();
+            HidLayer.CalculateNeuronValues();
+            OutLayer.CalculateNeuronValues();
+        }
+
+        public static void BackProgagate()
+        {
+            OutLayer.CalculateErrors();
+            HidLayer.CalculateErrors();
+            HidLayer.AdjustWeights();
+            InLayer.AdjustWeights();
         }
 
         public static double CalculateNetworkErrorAverage()
         {
-            if (NetworkErrorRating.Count == 0) return 0.09; //Für While Schleife...
+            if (NetworkErrorRating.Count == 0) return 1; //Für ersten Durchlauf
             double average = 0.0;
             int count = 0;
             foreach (var error in NetworkErrorRating)
@@ -117,24 +143,42 @@ namespace Neuronal_Network
             {
                 for (var j = 0; j < data.GetLength(1); j++)
                 {
-                    InLayer.NeuronValue[i * 28 + j] = data[i, j]; //Splitte zweidimensionales Array in eindimensionales auf und speicher daten im InputLayer
+                    InLayer.NeuronValue[i * 28 + j] = (data[i, j] > 1) ? 1 : 0; //Splitte zweidimensionales Array in eindimensionales auf und speicher daten im InputLayer
                 }
             }
         }
 
-        public static void FeedForward()
+        public static void InitializeConfusionMatrix()
         {
-            InLayer.CalculateNeuronValues();
-            HidLayer.CalculateNeuronValues();
-            OutLayer.CalculateNeuronValues();
+            for (var i = 0; i < 10; i++)
+            {
+                for (var j = 0; j < 10; j++)
+                {
+                    ConfusionMatrix[i, j] = 0;
+                }
+            }
         }
 
-        public static void BackProgagate()
+        public static void PrintConfusionMatrix()
         {
-            OutLayer.CalculateErrors();
-            HidLayer.CalculateErrors();
-            HidLayer.AdjustWeights();
-            InLayer.AdjustWeights();
+            Console.WriteLine("  |  0  |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |");
+            Console.WriteLine("----------------------------------------------------------------");
+            for (int i = 0; i < 10; i++)
+            {
+                Console.Write(i.ToString() + " |");
+                for (int j = 0; j < 10; j++)
+                {
+
+                    Console.Write(ConfusionMatrix[i, j].ToString().PadLeft(5, ' ') + "|");
+
+                }
+                Console.WriteLine();
+                Console.WriteLine("----------------------------------------------------------------");
+            }
         }
+
+
+
+
     }
 }
