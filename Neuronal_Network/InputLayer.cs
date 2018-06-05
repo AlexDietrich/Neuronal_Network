@@ -7,20 +7,21 @@ namespace Neuronal_Network
         /// <summary>
         /// Initialize all needed variables for the neural network. 28x28 Pixels/Picture = 784
         /// </summary>
-        public const int NumberOfNeurons = 784;
-        public const int NumberOfChildNeurons = 89;
-        public const int NumberOfParentNeurons = 0;
+        private const int NumberOfNeurons = 784;
+
+        private const int NumberOfChildNeurons = 89;
+        private const int NumberOfParentNeurons = 0;
 
         public double[] NeuronValue { get; set; } = new double[NumberOfNeurons];
         public double[,] Weight { get; set; } = new double[NumberOfNeurons, NumberOfNeurons];
-        public double[,] WeightChanges { get; set; } = new double[NumberOfNeurons, NumberOfNeurons];
+        private double[,] WeightChanges { get; set; } = new double[NumberOfNeurons, NumberOfNeurons];
         public double[] Bias { get; set; } = new double[NumberOfNeurons];
         public double[] BiasWeight { get; set; } = new double[NumberOfNeurons];
-        public bool LinearOutput = false; //Kein Linearer Output erwünscht :D 
+        private bool LinearOutput = false; //Kein Linearer Output erwünscht :D 
         public double[] Error { get; set; } = new double[NumberOfNeurons];
 
         public HiddenLayer ChildLayer { get; private set; }
-        public InputLayer ParentLayer { get; private set; } = null; //InputLayer doesn't have parents -> That makes me sad :'(
+        private InputLayer ParentLayer { get; set; } = null; //InputLayer doesn't have parents -> That makes me sad :'(
 
         public InputLayer()
         {
@@ -61,7 +62,8 @@ namespace Neuronal_Network
                 }
                 else
                 {
-                    NeuronValue[j] = 1.0 / (1.0 + Math.Exp(-x));
+                    double k = Math.Exp(x);
+                    NeuronValue[j] = k / (1.0 + k);
                 }
             }
         }

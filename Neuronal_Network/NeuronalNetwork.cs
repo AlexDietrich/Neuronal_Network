@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Threading;
 using BIF4_MLE_NeuronalNetwork.utils;
 
 namespace Neuronal_Network
@@ -10,25 +13,45 @@ namespace Neuronal_Network
         private static HiddenLayer HidLayer { get; set; } = InLayer.ChildLayer;
         private static OutputLayer OutLayer { get; set; } = HidLayer.ChildLayer;
 
-        public static HashSet<double> NetworkErrorRating { get; private set; } = new HashSet<double>();
-        public static double TargetError { get; private set; } = 0.005;
+        private static HashSet<double> NetworkErrorRating { get; set; } = new HashSet<double>();
+        private static readonly List<Image> TrainData = new List<Image>();
+        private static readonly List<Image> TestData = new List<Image>();
+        private static double TargetError { get; set; } = 0.005;
 
-        public static int[,] ConfusionMatrix { get; set; } = new int[10, 10];
+        private static int[,] ConfusionMatrix { get; set; } = new int[10, 10];
 
         public static double LearningRate { get; private set; } = 0.2;
         public static double MomentumFactor { get; private set; } = 0.9;
         public static bool UseMomentum { get; private set; } = true;
 
+        public static readonly Thread WriteInFileThread = new Thread(WriteWeightsToFile);
+        private static readonly Stopwatch Watch = new Stopwatch();
+
+        public static void ReadDataFromFile()
+        {
+            Console.WriteLine("Reading test data ... ");
+            foreach (var data in MnistReader.ReadTestData())
+            {
+                TestData.Add(data);
+            }
+
+            Console.WriteLine("Reading training data ... ");
+            foreach (var data in MnistReader.ReadTrainingData())
+            {
+                TrainData.Add(data);
+            }
+        }
+
         public static void Train()
         {
-            Console.WriteLine("Reading training data ... ");
             Console.WriteLine("Starts to train the neural network ...");
+            Watch.Start();
             var actualerror = 1.0;
             var count = 0;
             while (actualerror > TargetError)
             {
                 NetworkErrorRating.Clear();
-                foreach (var image in MnistReader.ReadTrainingData())
+                foreach (var image in TrainData)
                 {
                     count++;
                     SetNeuronValueFromImage(image.Data); //Image data wird in InputLayer eingelesen 
@@ -36,23 +59,25 @@ namespace Neuronal_Network
                         .Label); //LabelDaten werden im OutputLayer gespeichert für späteren Vergleich
                     FeedForward();
                     NetworkErrorRating.Add(CalculateError());
-                    BackProgagate();
+                    BackProgagate(); 
                 }
                 actualerror = CalculateNetworkErrorAverage();
+                TimeSpan ts = Watch.Elapsed;
                 Console.WriteLine(
-                    $"Error-Rate: {actualerror} Image-Count: {count}");
+                    $"Error-Rate: {actualerror} Image-Count: {count} in {ts:mm\\:ss\\.ff}.");
             }
-            Console.WriteLine($"Training-Session is finished with Error-Rate: {actualerror}");
+            WriteInFileThread.Start();
+            Console.WriteLine($"Training-Session is finished with Error-Rate: {actualerror}.");
+            Watch.Stop();
         }
 
         public static void Test()
         {
-            Console.WriteLine("Reading test data ... ");
             Console.WriteLine("Starts to test the neural network ...");
             InitializeConfusionMatrix();
             var gesamtElemente = 0;
             var korrekteElemente = 0;
-            foreach (var image in MnistReader.ReadTestData())
+            foreach (var image in TestData)
             {
                 gesamtElemente++;
                 SetNeuronValueFromImage(image.Data); //Image data wird in InputLayer eingelesen 
@@ -71,14 +96,14 @@ namespace Neuronal_Network
             Console.WriteLine($"Accuracy: {accuracy} %");
         }
 
-        public static void FeedForward()
+        private static void FeedForward()
         {
             InLayer.CalculateNeuronValues();
             HidLayer.CalculateNeuronValues();
             OutLayer.CalculateNeuronValues();
         }
 
-        public static void BackProgagate()
+        private static void BackProgagate()
         {
             OutLayer.CalculateErrors();
             HidLayer.CalculateErrors();
@@ -86,11 +111,28 @@ namespace Neuronal_Network
             InLayer.AdjustWeights();
         }
 
+
+
+        private static void WriteWeightsToFile()
+        {
+            var weights = string.Empty;
+            var path = "mnist/trained_weights";
+            for (var i = 0; i < InLayer.Weight.GetLength(0); i++)
+            {
+                for (var j = 0; j < InLayer.Weight.GetLength(1); j++)
+                {
+                    weights += InLayer.Weight[i, j] + "|";
+                }
+                break;
+            }
+            File.WriteAllText(path, weights);
+        }
+
         /// <summary>
         /// Berechne die Fehlerdurschnitt vom ganzen Durchlauf der 60 000 gelernten Bildern
         /// </summary>
         /// <returns></returns>
-        public static double CalculateNetworkErrorAverage()
+        private static double CalculateNetworkErrorAverage()
         {
             double average = 0.0;
             int count = 0;
@@ -107,7 +149,7 @@ namespace Neuronal_Network
         /// Berechne Error Rate für eine Iteration vom Neuronalen Netzwerk.
         /// </summary>
         /// <returns></returns>
-        public static double CalculateError()
+        private static double CalculateError()
         {
             double error = 0.0;
             for (var i = 0; i < OutLayer.NeuronValue.Length; i++)
@@ -148,7 +190,7 @@ namespace Neuronal_Network
             }
         }
 
-        public static void InitializeConfusionMatrix()
+        private static void InitializeConfusionMatrix()
         {
             for (var i = 0; i < 10; i++)
             {
@@ -159,7 +201,7 @@ namespace Neuronal_Network
             }
         }
 
-        public static void PrintConfusionMatrix()
+        private static void PrintConfusionMatrix()
         {
             Console.WriteLine("  |  0  |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |");
             Console.WriteLine("----------------------------------------------------------------");

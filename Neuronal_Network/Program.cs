@@ -6,8 +6,10 @@ namespace Neuronal_Network
     {
         static void Main(string[] args)
         {
+            NeuronalNetwork.ReadDataFromFile();
             NeuronalNetwork.Train();
             NeuronalNetwork.Test();
+            NeuronalNetwork.WriteInFileThread.Join();
             Console.WriteLine("Press any key for exit!");
             Console.ReadKey();
         }

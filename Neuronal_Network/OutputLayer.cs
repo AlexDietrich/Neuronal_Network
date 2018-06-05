@@ -7,8 +7,9 @@ namespace Neuronal_Network
         /// <summary>
         /// Initialize all needed variables for the neural network. 28x28 Pixels/Picture = 784
         /// </summary>
-        public const int NumberOfNeurons = 10;
-        public const int NumberOfParentNeurons = 89;
+        private const int NumberOfNeurons = 10;
+
+        private const int NumberOfParentNeurons = 89;
 
 
         public double[] NeuronValue { get; set; } = new double[NumberOfNeurons];
@@ -20,11 +21,11 @@ namespace Neuronal_Network
             {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
 
 
-        public bool LinearOutput = false; //Kein Linearer Output erwünscht :D 
+        private bool LinearOutput = false; //Kein Linearer Output erwünscht :D 
 
 
-        public OutputLayer ChildLayer { get; private set; } = null;
-        public HiddenLayer ParentLayer { get; private set; }
+        private OutputLayer ChildLayer { get; set; } = null;
+        private HiddenLayer ParentLayer { get; set; }
 
         public OutputLayer(HiddenLayer parent)
         {
@@ -49,7 +50,8 @@ namespace Neuronal_Network
                 }
                 else
                 {
-                    NeuronValue[j] = 1.0 / (1.0 + Math.Exp(-x));
+                    double k = Math.Exp(x);
+                    NeuronValue[j] = k / (1.0 + k);
                 }
             }
         }
