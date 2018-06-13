@@ -9,7 +9,14 @@ namespace Neuronal_Network
             NeuronalNetwork.ReadDataFromFile();
             NeuronalNetwork.Train();
             NeuronalNetwork.Test();
-            NeuronalNetwork.WriteInFileThread.Join();
+            //Check if the threads are started or not.. if they are running - join before program exit
+            if (NeuronalNetwork.WriteHiddenWeightsFileThread.IsAlive &&
+                NeuronalNetwork.WriteInputWeightsFileThread.IsAlive)
+            {
+                NeuronalNetwork.WriteHiddenWeightsFileThread.Join();
+                NeuronalNetwork.WriteInputWeightsFileThread.Join();
+            }
+
             Console.WriteLine("Press any key for exit!");
             Console.ReadKey();
         }

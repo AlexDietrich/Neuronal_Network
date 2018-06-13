@@ -41,7 +41,7 @@ namespace Neuronal_Network
                 x = 0.0;
                 for (var i = 0; i < NumberOfParentNeurons; i++)
                 {
-                    x += ParentLayer.NeuronValue[i] * ParentLayer.Weight[i, j];
+                    x += ParentLayer.NeuronValue[i] * ParentLayer.Weight[i*NumberOfParentNeurons+j];
                 }
                 x += ParentLayer.Bias[j] * ParentLayer.BiasWeight[j];
                 if ((ChildLayer == null) && LinearOutput)

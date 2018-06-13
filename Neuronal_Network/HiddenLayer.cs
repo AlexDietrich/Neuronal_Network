@@ -12,8 +12,8 @@ namespace Neuronal_Network
         private const int NumberOfChildNeurons = 10;
 
         public double[] NeuronValue { get; set; } = new double[NumberOfNeurons];
-        public double[,] Weight { get; set; } = new double[NumberOfNeurons, NumberOfNeurons];
-        private double[,] WeightChanges { get; set; } = new double[NumberOfNeurons, NumberOfNeurons];
+        public double[] Weight { get; set; } = new double[NumberOfNeurons*NumberOfNeurons];
+        private double[] WeightChanges { get; set; } = new double[NumberOfNeurons*NumberOfNeurons];
         public double[] Bias { get; set; } = new double[NumberOfNeurons];
         public double[] BiasWeight { get; set; } = new double[NumberOfNeurons];
         public double[] Error { get; set; } = new double[NumberOfNeurons];
@@ -40,8 +40,8 @@ namespace Neuronal_Network
                 Bias[i] = (rnd.NextDouble() < 0.5) ? 1 : -1;
                 for (var j = 0; j < NumberOfNeurons; j++)
                 {
-                    Weight[i, j] = rnd.NextDouble() * 2 - 1;
-                    WeightChanges[i, j] = 0.0;
+                    Weight[i*NumberOfNeurons+j] = rnd.NextDouble() * 2 - 1;
+                    WeightChanges[i*NumberOfNeurons+j] = 0.0;
                 }
             }
         }
@@ -55,7 +55,7 @@ namespace Neuronal_Network
                 x = 0.0;
                 for (var i = 0; i < NumberOfParentNeurons; i++)
                 {
-                    x += ParentLayer.NeuronValue[i] * ParentLayer.Weight[i, j];
+                    x += ParentLayer.NeuronValue[i] * ParentLayer.Weight[i*NumberOfParentNeurons+j];
                 }
                 x += ParentLayer.Bias[j] * ParentLayer.BiasWeight[j];
                 if ((ChildLayer == null) && LinearOutput)
@@ -78,7 +78,7 @@ namespace Neuronal_Network
                 sum = 0.0;
                 for (var j = 0; j < NumberOfChildNeurons; j++)
                 {
-                    sum += ChildLayer.Error[j] * Weight[i, j];
+                    sum += ChildLayer.Error[j] * Weight[i*NumberOfNeurons+j];
                 }
                 Error[i] = sum * NeuronValue[i] * (1.0 - NeuronValue[i]);
             }
@@ -96,12 +96,12 @@ namespace Neuronal_Network
                     dw = NeuronalNetwork.LearningRate * ChildLayer.Error[j] * NeuronValue[i];
                     if (NeuronalNetwork.UseMomentum)
                     {
-                        Weight[i, j] += dw + NeuronalNetwork.MomentumFactor * WeightChanges[i, j];
-                        WeightChanges[i, j] = dw;
+                        Weight[i*NumberOfNeurons+j] += dw + NeuronalNetwork.MomentumFactor * WeightChanges[i*NumberOfNeurons+j];
+                        WeightChanges[i*NumberOfNeurons+j] = dw;
                     }
                     else
                     {
-                        Weight[i, j] += dw;
+                        Weight[i*NumberOfNeurons+j] += dw;
                     }
                 }
             }
